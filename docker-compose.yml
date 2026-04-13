@@ -51,10 +51,10 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=proxy
-      - traefik.http.routers.autotrader.rule=Host(`${TRAEFIK_APP_HOST:-autotrader.pydti.com}`)
-      - traefik.http.routers.autotrader.entrypoints=websecure
-      - traefik.http.routers.autotrader.tls=true
-      - traefik.http.services.autotrader.loadbalancer.server.port=3000
+      - traefik.http.routers.playchess.rule=Host(`autotrader.pydti.com`)
+      - traefik.http.routers.playchess.entrypoints=websecure
+      - traefik.http.routers.playchess.tls=true
+      - traefik.http.services.playchess.loadbalancer.server.port=3000
 
   postgres:
     image: postgres:16-alpine
@@ -80,3 +80,4 @@ volumes:
 networks:
   proxy:
     external: true
+    name: ${TRAEFIK_DOCKER_NETWORK:-proxy}
