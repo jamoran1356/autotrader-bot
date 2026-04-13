@@ -1,0 +1,127 @@
+import type { ActiveTrade, BotProfile, LeaderboardEntry, PlatformStats } from "@/lib/types";
+
+export const mockBots: BotProfile[] = [
+  {
+    id: "quant-pulse",
+    name: "Quant Pulse Alpha",
+    category: "AI Agents",
+    summary: "Momentum bot for BTC and ETH with aggressive order-book reading and tactical take-profit management.",
+    blockchains: ["HashKey", "Solana"],
+    defaultNetwork: "hashkey-testnet",
+    winRate: "71%",
+    performance30d: "+23.4%",
+    followers: 145,
+    riskProfile: "Balanced",
+    bagsToken: true,
+    pair: "BTC_USDT",
+    currentPrice: "$70,842",
+    capitalRequired: "$250",
+    confirmations: {
+      rsiExtreme: true,
+      macdExtreme: true,
+      volumeSpike: true,
+      orderBookExtreme: true,
+      total: 4,
+    },
+  },
+  {
+    id: "orderflow-prime",
+    name: "Orderflow Prime",
+    category: "DeFi",
+    summary: "Defensive bot focused on liquidity, daily rotation, and exposure caps against intrahour volatility.",
+    blockchains: ["HashKey", "Stellar"],
+    defaultNetwork: "hashkey-testnet",
+    winRate: "68%",
+    performance30d: "+18.1%",
+    followers: 98,
+    riskProfile: "Conservative",
+    bagsToken: true,
+    pair: "ETH_USDT",
+    currentPrice: "$3,684",
+    capitalRequired: "$180",
+    confirmations: {
+      rsiExtreme: true,
+      macdExtreme: true,
+      volumeSpike: false,
+      orderBookExtreme: true,
+      total: 3,
+    },
+  },
+  {
+    id: "macro-grid",
+    name: "Macro Grid Nexus",
+    category: "PayFi",
+    summary: "Hybrid strategy with premium alerts paid through x402 and execution gated by macro plus volume signals.",
+    blockchains: ["Stellar", "Solana"],
+    defaultNetwork: "stellar-testnet",
+    winRate: "65%",
+    performance30d: "+12.8%",
+    followers: 67,
+    riskProfile: "Dynamic",
+    bagsToken: false,
+    pair: "SOL_USDT",
+    currentPrice: "$176",
+    capitalRequired: "$120",
+    confirmations: {
+      rsiExtreme: true,
+      macdExtreme: false,
+      volumeSpike: true,
+      orderBookExtreme: true,
+      total: 3,
+    },
+  },
+];
+
+export const mockStats: PlatformStats = {
+  totalTrades: "135",
+  totalVolume: "$2.98M",
+  winRate: "68.3%",
+  activeTrades: "7",
+};
+
+export const mockTrades: ActiveTrade[] = [
+  {
+    txHash: "0x8ab9...e18f",
+    pair: "BTC_USDT",
+    entryPrice: 70220,
+    status: "open",
+    timestamp: new Date().toISOString(),
+  },
+  {
+    txHash: "0x1dc2...41af",
+    pair: "ETH_USDT",
+    entryPrice: 3612,
+    status: "open",
+    timestamp: new Date(Date.now() - 1000 * 60 * 28).toISOString(),
+  },
+];
+
+export const mockLeaderboard: LeaderboardEntry[] = [
+  {
+    rank: 1,
+    botId: "quant-pulse",
+    totalTrades: 42,
+    winRate: 0.71,
+    totalProfit: 1250.5,
+    performance30d: 0.23,
+    followers: 145,
+  },
+  {
+    rank: 2,
+    botId: "orderflow-prime",
+    totalTrades: 38,
+    winRate: 0.68,
+    totalProfit: 980.25,
+    performance30d: 0.18,
+    followers: 98,
+  },
+  {
+    rank: 3,
+    botId: "macro-grid",
+    totalTrades: 55,
+    winRate: 0.65,
+    totalProfit: 750.75,
+    performance30d: 0.12,
+    followers: 67,
+  },
+];

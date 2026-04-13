@@ -1,0 +1,38 @@
+{
+  "name": "autotrader-contracts",
+  "version": "1.0.0",
+  "description": "AutoTrader Smart Contracts for HashKey Chain",
+  "main": "scripts/compile.js",
+  "scripts": {
+    "compile": "node scripts/compile.js",
+    "test": "node --test test/solc-toolchain.test.js",
+    "deploy:testnet": "node scripts/deploy.js hashkey_testnet",
+    "deploy:mainnet": "node scripts/deploy.js hashkey_mainnet",
+    "verify": "node -e \"console.log('Contract verification is not configured in the solc+ethers toolchain.')\"",
+    "clean": "node scripts/clean.js",
+    "flatten": "node -e \"console.log('Flatten is not configured in the solc+ethers toolchain.')\""
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "hashkey",
+    "trading",
+    "defi"
+  ],
+  "author": "AutoTrader Team",
+  "license": "MIT",
+  "devDependencies": {
+    "dotenv": "^16.6.1",
+    "ethers": "^6.16.0",
+    "solc": "^0.8.30"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "bn.js": "^5.2.2",
+      "tmp": "^0.2.4"
+    }
+  }
+}

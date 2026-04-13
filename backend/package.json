@@ -1,0 +1,53 @@
+{
+  "name": "autotrader-bot-backend",
+  "version": "1.0.0",
+  "description": "AutoTrader Bot - AI-driven trading bot for HashKey Chain",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon --watch src --ext js,json src/index.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint \"src/**/*.js\"",
+    "lint:fix": "eslint \"src/**/*.js\" --fix",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed"
+  },
+  "keywords": [
+    "trading",
+    "bot",
+    "hashkey",
+    "defi",
+    "macd",
+    "rsi"
+  ],
+  "author": "AutoTrader Team",
+  "license": "MIT",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "axios": "^1.6.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "ethers": "^6.16.0",
+    "express": "^4.18.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.0.0",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "nodemon": "^3.0.0",
+    "prisma": "^6.6.0",
+    "supertest": "^6.3.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

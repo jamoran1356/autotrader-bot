@@ -1,0 +1,1 @@
+C:\wamp\www\proyectos\autotrader-bot\stellar-contracts\premium-signal-gate\target\wasm32v1-none\release\premium_signal_gate.wasm: C:\wamp\www\proyectos\autotrader-bot\stellar-contracts\premium-signal-gate\src\lib.rs

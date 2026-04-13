@@ -1,0 +1,9 @@
+{
+  "network": "hashkey_testnet",
+  "deployer": "0x978Ada9C16dC174A007DF9A3dcA6C6c42Bc15EbC",
+  "AutoTrader": "0xFd8D09b976F9096D4088644a79aA4467b94Feb99",
+  "priceFeed": "0x978Ada9C16dC174A007DF9A3dcA6C6c42Bc15EbC",
+  "feeCollector": "0x978Ada9C16dC174A007DF9A3dcA6C6c42Bc15EbC",
+  "timestamp": "2026-04-11T10:00:23.044Z",
+  "blockNumber": 26357483
+}
