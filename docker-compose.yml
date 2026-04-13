@@ -1,21 +1,104 @@
 services:
+  migrate:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: autotrader-migrate
+    env_file:
+      - backend/.env
+    environment:
+      DATABASE_URL: postgresql://${DATABASE_USER:-autotrader}:${DATABASE_PASSWORD:-autotrader}@postgres:5432/${DATABASE_NAME:-autotrader_marketplace}?schema=public
+      NODE_ENV: production
+    command: sh -c "pnpm prisma migrate deploy"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - default
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: autotrader-backend
+    env_file:
+      - backend/.env
+    environment:
+      DATABASE_URL: postgresql://${DATABASE_USER:-autotrader}:${DATABASE_PASSWORD:-autotrader}@postgres:5432/${DATABASE_NAME:-autotrader_marketplace}?schema=public
+      NODE_ENV: production
+      PORT: 3001
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    expose:
+      - "3001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: autotrader-app
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: http://backend:3001
+    depends_on:
+      backend:
+        condition: service_healthy
+    expose:
+      - "3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.autotrader.rule=Host(`${TRAEFIK_APP_HOST:-autotrader.pydti.com}`)
+      - traefik.http.routers.autotrader.entrypoints=websecure
+      - traefik.http.routers.autotrader.tls=true
+      - traefik.http.services.autotrader.loadbalancer.server.port=3000
+
   postgres:
     image: postgres:16-alpine
     container_name: autotrader-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: autotrader_marketplace
-      POSTGRES_USER: autotrader
-      POSTGRES_PASSWORD: autotrader
+      POSTGRES_DB: ${DATABASE_NAME:-autotrader_marketplace}
+      POSTGRES_USER: ${DATABASE_USER:-autotrader}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-autotrader}
     ports:
       - "55432:5432"
     volumes:
       - autotrader_pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U autotrader -d autotrader_marketplace"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER:-autotrader} -d ${DATABASE_NAME:-autotrader_marketplace}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - default
 
 volumes:
   autotrader_pg_data:
+
+networks:
+  proxy:
+    external: true
