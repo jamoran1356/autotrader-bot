@@ -9,7 +9,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${DATABASE_USER:-autotrader}:${DATABASE_PASSWORD:-autotrader}@postgres:5432/${DATABASE_NAME:-autotrader_marketplace}?schema=public
       NODE_ENV: production
-    command: sh -c "pnpm prisma migrate deploy"
+    command: sh -c "pnpm prisma migrate deploy || pnpm prisma db push"
     depends_on:
       postgres:
         condition: service_healthy
