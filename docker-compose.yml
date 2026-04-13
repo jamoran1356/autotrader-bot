@@ -34,7 +34,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      NEXT_PUBLIC_API_URL: http://backend:3001
+      NEXT_PUBLIC_API_URL: http://backend:3000
     depends_on:
       backend:
         condition: service_started
@@ -77,6 +77,11 @@ services:
 
 volumes:
   autotrader_pg_data:
+
+networks:
+  default:
+  proxy:
+    external: true
 
 networks:
   proxy:

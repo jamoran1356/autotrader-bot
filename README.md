@@ -1,185 +1,300 @@
-# AutoTrader Bot
+# AutoTrader Bot — AI-Powered DeFi on HashKey Chain
 
 <p align="center">
-  <strong>Autonomous trading marketplace with verifiable onchain execution, machine-native payment rails, and social reputation primitives.</strong>
+  <strong>Every trade is gated by your AI. Every decision is logged. Every execution is on-chain.</strong>
 </p>
 
 <p align="center">
   <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16.2.3-black" />
   <img alt="React" src="https://img.shields.io/badge/React-19.2.4-149ECA" />
-  <img alt="Backend" src="https://img.shields.io/badge/Express-API-3C873A" />
-  <img alt="Execution" src="https://img.shields.io/badge/Execution-HashKey_Testnet-2D5BFF" />
-  <img alt="Payments" src="https://img.shields.io/badge/Payments-Stellar_Testnet-111111" />
-  <img alt="Social" src="https://img.shields.io/badge/Social-Solana_Devnet-14F195" />
+  <img alt="AI" src="https://img.shields.io/badge/AI-Multi--Provider_LLM-FF6B35" />
+  <img alt="Execution" src="https://img.shields.io/badge/Execution-HashKey_Chain-2D5BFF" />
+  <img alt="Backend" src="https://img.shields.io/badge/Backend-Express+Prisma-3C873A" />
+  <img alt="Security" src="https://img.shields.io/badge/Keys-AES--256_Encrypted-critical" />
 </p>
 
-## Context: Dual-Hackathon Scope
+---
 
-This project is intentionally built as a single product that maps to two hackathon narratives:
+## What Makes This Different
 
-- Trading and onchain execution track:
-  - Deterministic strategy gating and verifiable trade lifecycle on HashKey testnet.
-- Agent payments and social growth track:
-  - Stellar x402-compatible premium signal rail.
-  - Solana/Bags-aligned operator identity for reputation and fee-sharing workflows.
+AutoTrader is not another trading bot with a dashboard. It introduces **AI-gated on-chain execution** — a dual safety architecture where every trade must pass through both technical signal validation AND an LLM risk analysis before touching the blockchain.
 
-The architecture is unified: one agentic product surface, multiple trust and monetization rails.
+```
+Market Scanner → 4/4 Technical Gate → AI Analysis → Confidence Check → HashKey Chain Execution
+                                                          ↓
+                                              Decision Log (full audit trail)
+```
 
-## Access Policy
+**The AI doesn't just advise. It decides.** If the AI says no, the trade doesn't execute — regardless of how strong the technical signals are.
 
-This repository is distributed as technical evidence and architecture artifact.
+---
 
-- No runtime secrets are distributed.
-- No local installation instructions are provided in this document.
-- All app consumption for reviewers and judges is intended through the hosted website managed by the team.
+## Core Innovation: Dual Safety Gate
 
-If you are reviewing the codebase, treat this README as a system specification and validation map.
+### Gate 1: Technical Signals (4/4 required)
+| Signal | Condition | Purpose |
+|--------|-----------|---------|
+| RSI | Extreme values (<30 or >70) | Momentum reversal detection |
+| MACD | Histogram divergence + crossover | Trend confirmation |
+| Volume | Spike >1.2× average | Momentum validation |
+| Order Book | Imbalance >60% | Supply/demand pressure |
 
-## Technical Problem Statement
+### Gate 2: AI Risk Analysis
+| Parameter | Description |
+|-----------|-------------|
+| Recommendation | LONG / SHORT / NO_TRADE |
+| Confidence Score | 0–100% — must exceed user-defined threshold |
+| Risk/Reward Ratio | Quantified with entry zone, TP1/TP2/TP3, stop loss |
+| Market Regime | Trending / ranging / volatile / low-liquidity |
+| Key Risks | Specific risk factors identified by the AI |
+| Reasoning | Full natural-language explanation of the decision |
 
-Algorithmic trading demos often fail under scrutiny because they lack one or more of:
+**Both gates must pass.** A 4/4 technical signal with low AI confidence = no trade. High AI confidence with 3/4 technicals = no trade.
 
-- Enforceable pre-trade risk conditions.
-- Verifiable execution records.
-- Transparent operator controls.
-- Sustainable monetization mechanism.
+---
 
-AutoTrader addresses those gaps by combining:
+## Multi-Provider AI: Bring Your Own Key
 
-- A strict multi-signal execution gate.
-- Onchain trade state transitions.
-- Operator controls for controlled testnet execution.
-- Cross-network expansion rails for machine payments and social capital.
+Users choose their AI provider and model. API keys are encrypted AES-256-CBC at rest and only used for direct calls to the chosen provider.
 
-## System Design
+| Provider | Models | Access |
+|----------|--------|--------|
+| **OpenRouter** | GPT-4o, Claude, Llama, Mixtral, 100+ models | Single key, any model |
+| **OpenAI** | GPT-4o, GPT-4o-mini | Direct API |
+| **Anthropic** | Claude Sonnet, Claude Haiku | Direct API |
 
-### 1) Strategy Validation Engine
+No vendor lock-in. No data sent to our servers. The user's key talks directly to their chosen provider.
 
-The scanner computes opportunity confidence via a mandatory 4/4 confirmation gate:
+---
 
-- RSI extreme.
-- MACD extreme.
-- Volume spike.
-- Order book imbalance.
+## AI Execution Modes
 
-Execution policy:
+### 1. AI Analysis Only
+Analyze any trading pair with AI — get a structured recommendation without executing.
+```
+POST /ai/analyze/:pair → AI recommendation + technical data
+```
 
-- Production intent: execute only when confirmations are 4/4.
-- Controlled test mode: manual override available for deterministic validation scenarios.
+### 2. AI One-Shot Execution
+Analyze + decide + execute on-chain in a single request. If AI approves, the trade goes to HashKey Chain.
+```
+POST /ai/execute/:pair → Analysis + Decision + On-Chain Trade
+```
 
-### 2) Execution Layer (HashKey Testnet)
+### 3. AI Auto-Trade (Autonomous)
+Enable AI auto-trade with a configurable confidence threshold. The scanner runs continuously, and the AI approves or rejects each opportunity automatically.
+```
+PUT /ai/auto-trade → { enabled: true, minConfidence: 0.75 }
+```
 
-Execution is performed through the AutoTrader EVM contract.
+### 4. Full Decision Audit Trail
+Every AI decision — whether it led to execution or not — is persisted with full context.
+```
+GET /ai/history → Paginated log of all AI decisions with reasoning
+```
 
-Core lifecycle:
+---
 
-- Deposit operator balance into contract.
-- Execute trade with encoded risk parameters.
-- Persist onchain trade state for observability and leaderboard derivation.
+## Architecture
 
-Current integrated contract:
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        FRONTEND (Next.js 16)                     │
+│  Dashboard: Stats · Active Trades · AI Settings · AI Analysis    │
+│             AI Auto-Trade · AI Decision Log · Trading Ops        │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │ REST API
+┌──────────────────────────▼──────────────────────────────────────┐
+│                      BACKEND (Express.js)                        │
+│                                                                  │
+│  ┌──────────────┐  ┌─────────────────┐  ┌───────────────────┐  │
+│  │ MarketScanner│  │ StrategyAnalyst │  │  TradeExecutor    │  │
+│  │ RSI/MACD/ATR │→ │ Multi-LLM Gate  │→ │  HashKey Chain    │  │
+│  │ Volume/OB    │  │ OpenRouter/OAI  │  │  ethers.js v6     │  │
+│  └──────────────┘  │ Anthropic       │  └───────────────────┘  │
+│                    └─────────────────┘                           │
+│                           │                                      │
+│                    ┌──────▼──────┐                               │
+│                    │  AiTradeLog │  ← Every decision persisted   │
+│                    │  PostgreSQL │                               │
+│                    └─────────────┘                               │
+└─────────────────────────────────────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────────┐
+│              HASHKEY CHAIN TESTNET (Solidity)                    │
+│  Contract: 0xFd8D09b976F9096D4088644a79aA4467b94Feb99           │
+│  OpenZeppelin Ownable + ReentrancyGuard                          │
+│  Trade lifecycle: deposit → execute → settle → leaderboard       │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-- 0xFd8D09b976F9096D4088644a79aA4467b94Feb99
+---
 
-### 3) Payment Rail (Stellar Testnet)
+## API Reference
 
-A Soroban contract scaffold is deployed for premium signal gating and x402-aligned payment semantics.
+### AI Endpoints (all require JWT auth)
 
-Deployed contract id:
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/ai/providers` | List supported AI providers and models |
+| `GET` | `/ai/config` | Get user's current AI config (key masked) |
+| `PUT` | `/ai/config` | Save/update AI provider, model, and encrypted key |
+| `DELETE` | `/ai/config` | Remove AI configuration |
+| `POST` | `/ai/analyze/:pair` | AI analysis with live technical data |
+| `POST` | `/ai/execute/:pair` | **AI analysis + on-chain execution (one-shot)** |
+| `POST` | `/ai/validate-key` | Quick API key validation |
+| `GET` | `/ai/history` | Paginated AI decision audit trail |
+| `GET` | `/ai/auto-trade` | Get auto-trade settings |
+| `PUT` | `/ai/auto-trade` | Toggle AI auto-trade + confidence threshold |
 
-- CBPX3EASUJ7L7TE3OELIPR7NB6XHLIHQ2IBGNNCFSVDIX4ZOMNMWJXIG
+### Trading Endpoints
 
-This rail is modeled to support machine-to-service premium signal unlocks.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | System health + runtime mode |
+| `GET` | `/wallet/status` | Bot wallet + contract balances |
+| `POST` | `/wallet/deposit` | Deposit HSK into contract |
+| `POST` | `/trades/test-execute` | Controlled test trade on testnet |
+| `POST` | `/trades/execute` | Manual trade execution |
+| `GET` | `/trades/active` | Active on-chain trades |
+| `GET` | `/stats` | Global statistics from chain |
+| `GET` | `/leaderboard` | Performance rankings |
 
-### 4) Social/Fee Rail (Solana Devnet)
+### Auth Endpoints
 
-The project includes operator identity and Solana connectivity for Bags-aligned social economics.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/auth/register` | Create account |
+| `POST` | `/auth/login` | JWT token issuance |
+| `GET` | `/users/me` | User profile |
+| `PUT` | `/users/me/wallet` | Link wallet address |
 
-Operator address:
+---
 
-- FtDxfY9pmcYrtpQgBzmRqHskah7UUfyU4p7W5TPxvw6E
+## Data Model
 
-This is used as an integration anchor for reputation and fee-sharing extensions.
+```
+User
+├── email, passwordHash, displayName, role, walletAddress
+├── aiAutoTrade (bool)          ← autonomous AI execution toggle
+├── aiMinConfidence (float)     ← minimum confidence threshold
+├── AiProviderConfig (1:1)      ← provider, model, encrypted API key
+├── AiTradeLog[] (1:many)       ← full AI decision history
+├── UserSession[]
+└── BotPersonalityPrompt[]
 
-## Runtime Surfaces
+AiTradeLog
+├── pair, recommendation, confidence, reasoning
+├── marketRegime, keyRisks, entryLow/High, stopLoss, riskReward
+├── executed (bool), txHash, executionError
+├── provider, model, technicalData
+└── createdAt (indexed for fast queries)
+```
 
-### Frontend
+---
 
-- Next.js App Router with server-rendered pages.
-- Marketplace, leaderboard, dashboard, and bot detail views.
-- UI now reflects deployed network artifacts (Stellar contract id and Solana operator address) via env-backed runtime values.
+## Security Model
 
-### Backend
+| Layer | Protection |
+|-------|-----------|
+| API Keys | AES-256-CBC encrypted at rest. Never stored in plaintext. |
+| Auth | JWT with bcrypt password hashing. 7-day token expiry. |
+| AI Config | Per-user isolation. Keys decrypted only at API call time. |
+| Contract | OpenZeppelin Ownable + ReentrancyGuard. Owner-restricted execution. |
+| Secrets | All credentials externalized via environment variables. |
+| Input | Server-side validation on all API endpoints. |
 
-- Express API orchestrating scanner, executor, auth, and DB-backed user state.
-- Prisma + PostgreSQL for identity/session/prompt persistence.
-- Ethers v6 runtime for onchain transaction flow.
+---
 
-Operational routes of interest:
+## Tech Stack
 
-- GET /health
-- GET /wallet/status
-- POST /wallet/deposit
-- POST /trades/test-execute
-- GET /stats
-- GET /trades/active
-- GET /leaderboard
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16.2.3, React 19.2.4, TypeScript 5, Tailwind CSS 4 |
+| Backend | Express.js, Prisma ORM, PostgreSQL |
+| AI | Multi-provider LLM (OpenRouter / OpenAI / Anthropic) |
+| Blockchain | ethers.js v6, Solidity (OpenZeppelin), HashKey Chain |
+| Infrastructure | Docker Compose (backend, app, postgres, nginx) |
+| Other Chains | Stellar Testnet (Soroban x402), Solana Devnet (operator identity) |
 
-## Security and Reliability Model
+---
 
-- Secrets are externalized; no credentials in source.
-- Controlled test execution endpoint is explicit and bounded to testnet operations.
-- Pre-trade signal policy is machine-checkable and deterministic.
-- Contract interactions are observable via chain explorers.
-- Runtime telemetry includes health and strategy activity surfaces.
+## HashKey Chain Integration
 
-## Judge-Oriented Verification Matrix
+- **Network**: HashKey Chain Testnet
+- **Contract**: `0xFd8D09b976F9096D4088644a79aA4467b94Feb99`
+- **Standard**: OpenZeppelin Ownable + ReentrancyGuard
+- **Native Token**: HSK (gas, deposits, trade amounts)
+- **Trade Lifecycle**: deposit → execute (with encoded TP1/TP2/TP3 + SL) → settle → leaderboard aggregation
 
-### Functional
+---
 
-- Marketplace discovery and bot-level configuration UX.
-- Live wallet status and controlled execution controls.
-- Empty-state correctness when onchain data is absent.
+## Judge Verification Checklist
 
-### Onchain
+### AI Integration ✅
+- [ ] Configure AI provider in Dashboard → AI Settings
+- [ ] Run AI analysis on any trading pair (BTC, ETH, SOL, HSK, DOGE)
+- [ ] View structured recommendation with confidence, entry zone, TP/SL, reasoning
+- [ ] Enable AI Auto-Trade with custom confidence threshold
+- [ ] Run AI One-Shot Execution (analyze + decide + execute)
+- [ ] View full AI Decision Log with expandable reasoning
 
-- HashKey execution contract integrated and queryable.
-- Stellar payment rail contract deployed and referenced.
-- Solana operator identity provisioned and published.
+### On-Chain Execution ✅
+- [ ] Wallet status shows bot address and contract balance
+- [ ] Deposit HSK into contract via dashboard
+- [ ] Execute controlled test trade on HashKey Chain testnet
+- [ ] View active trades and leaderboard from on-chain data
 
-### Product
+### Security ✅
+- [ ] API keys encrypted AES-256 — verify masked display in UI
+- [ ] JWT auth required for all AI and user endpoints
+- [ ] No secrets in source code
 
-- Clear migration path from testnet validation to production hardening.
-- Multi-network narrative retained within one coherent product.
-- Agent-readable project metadata present for autonomous evaluators.
+### Architecture ✅
+- [ ] Full REST API with 20+ endpoints
+- [ ] PostgreSQL persistence with Prisma migrations
+- [ ] Docker Compose deployment ready
+- [ ] Machine-readable `/llms.txt` for autonomous evaluators
+
+---
+
+## Supplementary Chains
+
+### Stellar Testnet (x402 Payment Rail)
+Soroban contract for premium signal gating with HTTP micropayment semantics.
+- Contract: `CBPX3EASUJ7L7TE3OELIPR7NB6XHLIHQ2IBGNNCFSVDIX4ZOMNMWJXIG`
+
+### Solana Devnet (Social/Fee Rail)
+Operator identity for Bags-aligned reputation and fee-sharing.
+- Operator: `FtDxfY9pmcYrtpQgBzmRqHskah7UUfyU4p7W5TPxvw6E`
+
+---
 
 ## Agent and Crawler Discoverability
 
-Machine-readable assets are included to improve autonomous pre-judging quality:
+Machine-readable assets for autonomous pre-judging:
 
-- [app/llms.txt/route.ts](app/llms.txt/route.ts)
-- [app/robots.ts](app/robots.ts)
-- [app/sitemap.ts](app/sitemap.ts)
-- [app/manifest.ts](app/manifest.ts)
+- [app/llms.txt/route.ts](app/llms.txt/route.ts) — Project brief for LLM evaluators
+- [app/robots.ts](app/robots.ts) — Crawler rules
+- [app/sitemap.ts](app/sitemap.ts) — URL map
+- [app/manifest.ts](app/manifest.ts) — PWA manifest
 
-These resources summarize project purpose, novelty, and verification cues.
+---
 
-## Repository Pointers
+## Repository Structure
 
-- [app](app)
-- [components](components)
-- [backend](backend)
-- [smart-contracts](smart-contracts)
-- [stellar-contracts](stellar-contracts)
-- [scripts](scripts)
-- [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md)
-- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [app](app) — Next.js pages and routes
+- [components](components) — React UI components
+- [lib](lib) — Shared types, API client, auth
+- [backend](backend) — Express API server
+- [backend/src/ai](backend/src/ai) — AI Strategy Analyst
+- [smart-contracts](smart-contracts) — Solidity contract + deployment
+- [stellar-contracts](stellar-contracts) — Soroban contract
+- [scripts](scripts) — Deployment scripts
+- [ARCHITECTURE.md](ARCHITECTURE.md) — Detailed architecture doc
+- [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) — Deployment snapshot
 
-## Review Notes
-
-- This codebase is intended to be evaluated as a hosted application plus technical implementation proof.
-- Environment files are intentionally not bundled for third-party local execution.
-- The canonical deployment snapshot is maintained in [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md).
+---
 
 ## License
 
