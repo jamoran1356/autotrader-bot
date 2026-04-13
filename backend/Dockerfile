@@ -10,4 +10,4 @@ COPY backend ./
 
 EXPOSE 3001
 
-CMD ["pnpm", "start"]
+CMD ["sh", "-c", "pnpm prisma migrate deploy || pnpm prisma db push; pnpm start"]

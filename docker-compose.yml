@@ -1,22 +1,4 @@
 services:
-  migrate:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: autotrader-migrate
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@postgres:5432/${DATABASE_NAME}?schema=public
-      NODE_ENV: production
-    command: sh -c "pnpm prisma migrate deploy || pnpm prisma db push"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: "no"
-    networks:
-      - default
-
   backend:
     build:
       context: .
@@ -29,8 +11,6 @@ services:
       NODE_ENV: production
       PORT: 3001
     depends_on:
-      migrate:
-        condition: service_completed_successfully
       postgres:
         condition: service_healthy
     expose:
