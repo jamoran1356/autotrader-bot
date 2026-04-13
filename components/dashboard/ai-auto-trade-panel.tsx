@@ -115,7 +115,7 @@ export function AiAutoTradePanel() {
           {enabled ? (
             <Badge tone="success">Active</Badge>
           ) : (
-            <Badge tone="default">Inactive</Badge>
+            <Badge tone="neutral">Inactive</Badge>
           )}
         </div>
       </CardHeader>
@@ -131,7 +131,7 @@ export function AiAutoTradePanel() {
             <Button
               onClick={handleToggle}
               disabled={isSaving || !hasConfig}
-              variant={enabled ? "secondary" : "default"}
+              variant={enabled ? "secondary" : "primary"}
             >
               {isSaving ? "Updating..." : enabled ? "Disable AI Gate" : "Enable AI Gate"}
             </Button>
@@ -218,7 +218,7 @@ export function AiAutoTradePanel() {
         {execResult && (
           <div className="rounded-[20px] border border-[var(--border)] bg-[var(--surface)] p-4">
             <div className="flex items-center gap-3">
-              <Badge tone={execResult.ai.recommendation === "NO_TRADE" ? "default" : "success"}>
+              <Badge tone={execResult.ai.recommendation === "NO_TRADE" ? "neutral" : "success"}>
                 {execResult.ai.recommendation}
               </Badge>
               <span className="text-sm font-semibold">

@@ -10,7 +10,7 @@ import type { AiTradeLogEntry } from "@/lib/types";
 
 function RecommendationBadge({ rec }: { rec: string }) {
   const tone =
-    rec === "LONG" ? "success" : rec === "SHORT" ? "warning" : rec === "ERROR" ? "warning" : "default";
+    rec === "LONG" ? "success" : rec === "SHORT" ? "warning" : rec === "ERROR" ? "warning" : "neutral";
   return <Badge tone={tone}>{rec}</Badge>;
 }
 
@@ -110,7 +110,7 @@ export function AiHistoryPanel() {
                   {log.executed ? (
                     <Badge tone="success">Executed</Badge>
                   ) : (
-                    <Badge tone="default">Not executed</Badge>
+                    <Badge tone="neutral">Not executed</Badge>
                   )}
                   {log.txHash && (
                     <span className="font-mono text-xs text-[var(--muted)]">
