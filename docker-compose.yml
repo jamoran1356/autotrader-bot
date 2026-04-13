@@ -9,15 +9,15 @@ services:
     environment:
       DATABASE_URL: postgresql://${DATABASE_USER:-autotrader}:${DATABASE_PASSWORD:-autotrader}@postgres:5432/${DATABASE_NAME:-autotrader_marketplace}?schema=public
       NODE_ENV: production
-      PORT: 3001
+      PORT: 3000
     depends_on:
       postgres:
         condition: service_healthy
     expose:
-      - "3001"
+      - "3000"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -33,16 +33,16 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 3001
       NEXT_PUBLIC_API_URL: http://backend:3001
     depends_on:
       backend:
         condition: service_started
     expose:
-      - "3000"
+      - "3001"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001', (r) => process.exit(r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -55,7 +55,7 @@ services:
       - traefik.http.routers.autotrader.rule=Host(`autotrader.pydti.com`)
       - traefik.http.routers.autotrader.entrypoints=websecure
       - traefik.http.routers.autotrader.tls=true
-      - traefik.http.services.autotrader.loadbalancer.server.port=3000
+      - traefik.http.services.autotrader.loadbalancer.server.port=3001
 
   postgres:
     image: postgres:16-alpine
