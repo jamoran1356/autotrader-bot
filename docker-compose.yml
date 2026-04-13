@@ -5,7 +5,7 @@ services:
       dockerfile: backend/Dockerfile
     container_name: autotrader-migrate
     env_file:
-      - backend/.env
+      - .env
     environment:
       DATABASE_URL: postgresql://${DATABASE_USER:-autotrader}:${DATABASE_PASSWORD:-autotrader}@postgres:5432/${DATABASE_NAME:-autotrader_marketplace}?schema=public
       NODE_ENV: production
@@ -23,7 +23,7 @@ services:
       dockerfile: backend/Dockerfile
     container_name: autotrader-backend
     env_file:
-      - backend/.env
+      - .env
     environment:
       DATABASE_URL: postgresql://${DATABASE_USER:-autotrader}:${DATABASE_PASSWORD:-autotrader}@postgres:5432/${DATABASE_NAME:-autotrader_marketplace}?schema=public
       NODE_ENV: production
