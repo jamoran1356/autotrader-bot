@@ -1,5 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { TradingOpsPanel } from "@/components/dashboard/trading-ops-panel";
+import { AiSettingsPanel } from "@/components/dashboard/ai-settings-panel";
+import { AiAnalysisPanel } from "@/components/dashboard/ai-analysis-panel";
+import { AiAutoTradePanel } from "@/components/dashboard/ai-auto-trade-panel";
+import { AiHistoryPanel } from "@/components/dashboard/ai-history-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getActiveTrades, getPlatformStats } from "@/lib/api";
 
@@ -10,9 +14,9 @@ export default async function DashboardPage() {
     <div className="page-shell space-y-8">
       <section className="space-y-4">
         <span className="eyebrow">Dashboard</span>
-        <h1 className="text-4xl font-semibold tracking-tight">Live portfolio and execution overview</h1>
+        <h1 className="text-4xl font-semibold tracking-tight">AI-Powered Trading on HashKey Chain</h1>
         <p className="max-w-3xl text-base leading-8 text-[var(--muted)]">
-          A clear summary of the bot, active positions, and managed volume. This is where onchain execution and premium micropayments connect.
+          Configure your AI provider, run intelligent market analysis, and let the AI gate every on-chain execution. Every decision is logged for full transparency.
         </p>
       </section>
 
@@ -31,7 +35,7 @@ export default async function DashboardPage() {
           <CardContent className="space-y-3">
             {trades.length === 0 ? (
               <div className="rounded-[20px] border border-[var(--border)] bg-[var(--surface)] px-4 py-6 text-sm text-[var(--muted)]">
-                No open onchain trades yet. Use the backend execution endpoint after funding the bot balance in the contract.
+                No open onchain trades yet. Use the AI One-Shot Execution below or fund the bot balance and enable AI Auto-Trade.
               </div>
             ) : trades.map((trade) => (
               <div key={trade.txHash} className="flex flex-col gap-3 rounded-[20px] border border-[var(--border)] bg-[var(--surface)] px-4 py-4 md:flex-row md:items-center md:justify-between">
@@ -51,16 +55,16 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl font-semibold">Immediate roadmap</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm leading-7 text-[var(--muted)]">
-            <div className="rounded-[18px] border border-[var(--border)] bg-white/80 p-4">Connect wallet and direct execution against AutoTrader on HashKey testnet.</div>
-            <div className="rounded-[18px] border border-[var(--border)] bg-white/80 p-4">Add a premium feed protected by x402 HTTP payments on Stellar testnet.</div>
-            <div className="rounded-[18px] border border-[var(--border)] bg-white/80 p-4">Expose token and per-bot fee sharing through Bags SDK and public API.</div>
-          </CardContent>
-        </Card>
+        <AiSettingsPanel />
+      </section>
+
+      <section>
+        <AiAnalysisPanel />
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        <AiAutoTradePanel />
+        <AiHistoryPanel />
       </section>
 
       <section>

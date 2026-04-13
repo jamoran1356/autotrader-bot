@@ -11,65 +11,67 @@ import { siteConfig } from "@/lib/seo";
 
 const pillars = [
   {
-    title: "Curated marketplace",
-    text: "Bots compete on real performance, risk discipline, and operational clarity so users can choose with context.",
-    icon: ChartColumnIncreasing,
+    title: "AI-gated execution",
+    text: "Every trade passes through your chosen LLM before on-chain execution. The AI produces structured risk analysis with confidence scores — trades only execute when AI agrees.",
+    icon: Sparkles,
   },
   {
-    title: "4/4 safety gate",
-    text: "No trade can run without validating RSI, MACD, volume, and order book. The interface keeps this visible at all times.",
+    title: "4/4 technical safety gate",
+    text: "RSI, MACD, volume, and order-book signals must ALL align. Then the AI gate adds a second layer of intelligent risk assessment.",
     icon: ShieldCheck,
   },
   {
-    title: "Monetization model",
-    text: "Bags for reputation and fee sharing, Stellar x402 for premium signals, and HashKey for onchain execution.",
-    icon: Coins,
+    title: "Full decision audit trail",
+    text: "Every AI decision — recommendation, confidence, reasoning, and execution outcome — is persisted for transparency and continuous improvement.",
+    icon: ChartColumnIncreasing,
   },
 ];
 
 const hackathonTargets = [
-  "HashKey Chain: onchain execution and transparent trade traceability.",
-  "Stellar Agents: premium signal monetization through x402 HTTP payments.",
-  "Bags Hackathon: fee sharing, verified profile, and social signal for each bot.",
+  "AI + DeFi Track: LLM-powered strategy analyst gates every on-chain execution with confidence-scored recommendations.",
+  "HashKey Chain: Solidity smart contract deployed on testnet with full trade lifecycle management using HSK.",
+  "Multi-Provider AI: Users bring their own API key — OpenRouter (100+ models), OpenAI (GPT-4o), Anthropic (Claude).",
+  "Full Audit Trail: Every AI decision persisted with reasoning, risk assessment, and execution outcome.",
 ];
 
 const architectureCards = [
   {
-    title: "End-to-end execution flow",
-    text: "Signal detection, validation, and trade dispatch are connected across scanner, smart contract, and UI layers — each step is visible, not hidden.",
+    title: "AI-gated execution pipeline",
+    text: "Scanner detects opportunity → 4/4 technical gate → AI analysis with confidence scoring → on-chain execution on HashKey Chain. Every step is logged and auditable.",
   },
   {
-    title: "HashKey onchain settlement",
-    text: "Trade lifecycle is managed by a Solidity contract deployed to HashKey testnet. Every outcome produces a verifiable onchain record.",
+    title: "Multi-provider LLM integration",
+    text: "Users choose their AI provider and model. OpenRouter gives access to 100+ models, plus direct OpenAI and Anthropic support. API keys encrypted AES-256 at rest.",
   },
   {
-    title: "x402 machine payments",
-    text: "Premium signal access is gated behind per-request HTTP micropayments — bots and agents can unlock intelligence programmatically without human intervention.",
+    title: "One-shot AI execution",
+    text: "Single API call: technical analysis → AI evaluation → on-chain trade. The AI decides, HashKey Chain executes, and the decision log captures everything.",
   },
   {
-    title: "Network effects built in",
-    text: "Leaderboard rankings, follower counts, and Bags fee-sharing create compounding incentives: better bots attract capital, capital validates reputation.",
+    title: "Autonomous AI auto-trade",
+    text: "Enable AI auto-trade and set your confidence threshold. The scanner runs continuously, and your AI provider approves or rejects each opportunity automatically.",
   },
   {
-    title: "Non-negotiable safety gate",
-    text: "Four independent signals — RSI, MACD, volume, order book — must align simultaneously. The gate cannot be bypassed through the UI or the API.",
+    title: "Dual safety gate",
+    text: "Technical gate (RSI + MACD + volume + order book) AND AI gate (confidence threshold). Two independent layers that cannot be bypassed.",
   },
   {
-    title: "Isolated persistence layer",
-    text: "PostgreSQL in Docker with Prisma schema migrations. User state, sessions, and bot prompts are versioned and recoverable independently of the trading engine.",
+    title: "Production-grade persistence",
+    text: "PostgreSQL + Prisma with migration support. Users, AI configs, trade logs, and decision history are all versioned and Docker-ready for deployment.",
   },
 ];
 
 export const metadata: Metadata = {
-  title: "Autonomous Trading Agent Marketplace",
+  title: "AI-Powered Autonomous DeFi Trading on HashKey Chain",
   description:
-    "Explore, configure, and run autonomous trading agents with mandatory 4-point validation, cross-chain execution, and judge-ready architecture evidence.",
+    "AutoTrader combines LLM intelligence (GPT-4, Claude, 100+ models) with on-chain execution on HashKey Chain. Every trade is gated by both technical signals AND AI risk analysis.",
   keywords: [
-    "autonomous agents",
-    "trading bot marketplace",
-    "judge-ready AI project",
-    "prejudging hackathon project",
-    "onchain algorithmic trading",
+    "ai defi trading",
+    "hashkey chain",
+    "llm trading agent",
+    "ai-gated execution",
+    "autonomous trading bot",
+    "on-chain horizon hackathon",
   ],
 };
 
@@ -95,13 +97,15 @@ export default async function Home() {
         applicationCategory: "FinanceApplication",
         operatingSystem: "Web",
         description:
-          "Judge-ready platform to evaluate, configure, and execute autonomous trading agents with enforced signal-based safety and cross-network support.",
+          "AI-gated autonomous trading on HashKey Chain. Combines LLM intelligence with on-chain execution — every trade passes through dual technical and AI safety gates.",
         featureList: [
-          "4/4 mandatory pre-trade confirmations",
-          "Marketplace ranking by performance and followers",
-          "Wallet linking and network-aware execution setup",
-          "PostgreSQL + Prisma persistence for user and prompt state",
-          "Monetization path through x402 and Bags-aligned economics",
+          "AI-gated execution: LLM analysis before every on-chain trade",
+          "Multi-provider AI: OpenRouter (100+ models), OpenAI, Anthropic",
+          "4/4 mandatory pre-trade technical confirmations",
+          "Full AI decision audit trail with reasoning and outcomes",
+          "One-shot AI execution: analyze + decide + execute in single flow",
+          "AES-256 encrypted API key storage",
+          "HashKey Chain testnet deployment with verified contract",
         ],
         offers: {
           "@type": "Offer",
@@ -130,14 +134,14 @@ export default async function Home() {
           <div className="space-y-6">
             <span className="eyebrow">
               <Sparkles className="h-4 w-4" />
-              Bot marketplace for HashKey, Bags, and Stellar
+              AI-Powered DeFi on HashKey Chain
             </span>
             <div className="space-y-4">
               <h1 className="section-title max-w-4xl font-semibold text-[var(--foreground)]">
-                Pick the best bot, configure it precisely, and trade only when all 4 checks are aligned.
+                Your AI decides. HashKey Chain executes. Every decision is logged.
               </h1>
               <p className="max-w-2xl text-lg leading-8 text-[var(--muted)] md:text-xl">
-                AutoTrader evolves from a standalone bot into a clear, traceable, and elegant marketplace: performance-based discovery, strategy-level configuration, and real-time validated execution.
+                AutoTrader gates every on-chain trade through your chosen LLM — GPT-4, Claude, or 100+ models via OpenRouter. Combine 4/4 technical signals with deep AI risk analysis for institutional-grade DeFi automation.
               </p>
             </div>
             <HeroActions />

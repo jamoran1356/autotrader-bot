@@ -14,15 +14,19 @@ const { loadContractAbi } = require('./lib/contract-runtime');
 const prisma = require('./lib/prisma');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const aiRoutes = require('./routes/ai');
+const StrategyAnalyst = require('./ai/StrategyAnalyst');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const aiAnalyst = new StrategyAnalyst();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/ai', aiRoutes);
 
 // Global state
 let scanner = null;
@@ -242,10 +246,15 @@ async function initialize() {
   });
 
   console.log(`[APP] ✅ Initialization complete (${autoExecutionEnabled ? 'auto-trading enabled' : 'manual execution only'})`);
+
+  // Expose scanner and executor to route handlers (used by /ai routes)
+  app.locals.scanner = scanner;
+  app.locals.executor = executor;
 }
 
 /**
- * Auto-execute trade if conditions are met
+ * Auto-execute trade if conditions are met — AI-gated when configured.
+ * Flow: 4/4 technical confirmations → AI analysis → execute if AI agrees
  */
 async function handleAutoExecution(opportunity) {
   if (!executor) {
@@ -257,18 +266,134 @@ async function handleAutoExecution(opportunity) {
     return;
   }
 
-  console.log(`[APP] Auto-executing trade: ${opportunity.pair}`);
+  // Find users with AI auto-trade enabled
+  const autoTraders = await prisma.user.findMany({
+    where: { aiAutoTrade: true },
+    include: { aiConfig: true },
+  });
 
-  const result = await executor.executeTrade(opportunity, defaultTradeAmount);
+  if (autoTraders.length === 0) {
+    // Fallback: execute without AI if no users have AI auto-trade enabled
+    console.log(`[APP] Auto-executing trade (no AI gate): ${opportunity.pair}`);
+    const result = await executor.executeTrade(opportunity, defaultTradeAmount);
+    if (result.status === 'success') {
+      activeTrades[result.txHash] = {
+        pair: opportunity.pair,
+        entryPrice: opportunity.currentPrice,
+        txHash: result.txHash,
+        timestamp: new Date(),
+        ...opportunity,
+      };
+    }
+    return;
+  }
 
-  if (result.status === 'success') {
-    activeTrades[result.txHash] = {
-      pair: opportunity.pair,
-      entryPrice: opportunity.currentPrice,
-      txHash: result.txHash,
-      timestamp: new Date(),
-      ...opportunity
-    };
+  // AI-gated execution for each auto-trader
+  for (const user of autoTraders) {
+    if (!user.aiConfig) continue;
+
+    let decryptedKey;
+    try {
+      const crypto = require('crypto');
+      const ENCRYPTION_KEY = crypto
+        .createHash('sha256')
+        .update(process.env.AI_KEY_SECRET || process.env.JWT_SECRET || 'autotrader-ai-key-secret')
+        .digest();
+      const [ivHex, encrypted] = user.aiConfig.apiKey.split(':');
+      const iv = Buffer.from(ivHex, 'hex');
+      const decipher = crypto.createDecipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);
+      let dec = decipher.update(encrypted, 'hex', 'utf8');
+      dec += decipher.final('utf8');
+      decryptedKey = dec;
+    } catch (err) {
+      console.error(`[APP] Failed to decrypt AI key for user ${user.id}:`, err.message);
+      continue;
+    }
+
+    try {
+      const aiResult = await aiAnalyst.analyze(opportunity.pair, opportunity, {
+        provider: user.aiConfig.provider,
+        apiKey: decryptedKey,
+        model: user.aiConfig.model,
+      });
+
+      const meetsConfidence = aiResult.confidence >= (user.aiMinConfidence || 0.7);
+      const isTradeSignal = aiResult.recommendation === 'LONG' || aiResult.recommendation === 'SHORT';
+
+      // Log AI decision
+      await prisma.aiTradeLog.create({
+        data: {
+          userId: user.id,
+          pair: opportunity.pair,
+          recommendation: aiResult.recommendation,
+          confidence: aiResult.confidence,
+          reasoning: aiResult.reasoning,
+          marketRegime: aiResult.market_regime,
+          keyRisks: JSON.stringify(aiResult.key_risks || []),
+          entryLow: aiResult.entry_zone?.low,
+          entryHigh: aiResult.entry_zone?.high,
+          stopLoss: aiResult.stop_loss?.price,
+          riskReward: aiResult.risk_reward_ratio,
+          executed: meetsConfidence && isTradeSignal,
+          provider: aiResult.provider,
+          model: aiResult.model,
+          technicalData: JSON.stringify({
+            rsi: opportunity.rsi,
+            macd: opportunity.macd,
+            confirmations: opportunity.confirmations,
+            currentPrice: opportunity.currentPrice,
+          }),
+        },
+      });
+
+      if (meetsConfidence && isTradeSignal) {
+        console.log(`[APP] AI approved trade for ${user.id}: ${opportunity.pair} (${aiResult.recommendation}, ${(aiResult.confidence * 100).toFixed(0)}%)`);
+        const result = await executor.executeTrade(opportunity, defaultTradeAmount);
+
+        if (result.status === 'success') {
+          activeTrades[result.txHash] = {
+            pair: opportunity.pair,
+            entryPrice: opportunity.currentPrice,
+            txHash: result.txHash,
+            timestamp: new Date(),
+            aiApproved: true,
+            aiConfidence: aiResult.confidence,
+            aiRecommendation: aiResult.recommendation,
+            ...opportunity,
+          };
+
+          // Update log with tx hash
+          await prisma.aiTradeLog.updateMany({
+            where: {
+              userId: user.id,
+              pair: opportunity.pair,
+              executed: true,
+              txHash: null,
+            },
+            data: { txHash: result.txHash },
+          });
+        }
+      } else {
+        console.log(`[APP] AI rejected trade for ${user.id}: ${opportunity.pair} (${aiResult.recommendation}, ${(aiResult.confidence * 100).toFixed(0)}% < ${(user.aiMinConfidence * 100).toFixed(0)}% threshold)`);
+      }
+    } catch (aiError) {
+      console.error(`[APP] AI analysis failed for user ${user.id}:`, aiError.message);
+
+      // Log failed analysis
+      await prisma.aiTradeLog.create({
+        data: {
+          userId: user.id,
+          pair: opportunity.pair,
+          recommendation: 'ERROR',
+          confidence: 0,
+          reasoning: `AI analysis error: ${aiError.message}`,
+          executed: false,
+          executionError: aiError.message,
+          provider: user.aiConfig.provider,
+          model: user.aiConfig.model,
+        },
+      });
+    }
   }
 }
 

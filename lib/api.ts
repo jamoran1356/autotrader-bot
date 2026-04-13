@@ -1,6 +1,12 @@
 import { mockBots, mockLeaderboard, mockStats, mockTrades } from "@/lib/mock-data";
 import type {
   ActiveTrade,
+  AiAnalysisResponse,
+  AiAutoTradeSettings,
+  AiConfigResponse,
+  AiExecutionResponse,
+  AiProviderOption,
+  AiTradeHistoryResponse,
   BotProfile,
   LeaderboardEntry,
   ManualTradeResult,
@@ -120,4 +126,124 @@ export async function executeControlledTestTrade(input: {
   forceConfirmations: boolean;
 }): Promise<ManualTradeResult> {
   return postJson<ManualTradeResult>("/trades/test-execute", input);
+}
+
+// ── AI Strategy Analyst API ──
+
+function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("autotrader_auth_token");
+}
+
+async function fetchJsonAuth<T>(path: string): Promise<T | null> {
+  try {
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_URL}${path}`, { cache: "no-store", headers });
+    if (!response.ok) return null;
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function postJsonAuth<T>(path: string, body: Record<string, unknown>): Promise<T> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  const payload = (await response.json()) as T & { error?: string };
+  if (!response.ok) throw new Error(payload.error || "Request failed");
+  return payload;
+}
+
+async function putJsonAuth<T>(path: string, body: Record<string, unknown>): Promise<T> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  const payload = (await response.json()) as T & { error?: string };
+  if (!response.ok) throw new Error(payload.error || "Request failed");
+  return payload;
+}
+
+async function deleteJsonAuth(path: string): Promise<void> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const response = await fetch(`${API_URL}${path}`, { method: "DELETE", headers });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new Error(payload.error || "Request failed");
+  }
+}
+
+export async function getAiProviders(): Promise<AiProviderOption[]> {
+  const response = await fetchJson<{ data: AiProviderOption[] }>("/ai/providers");
+  return response?.data ?? [];
+}
+
+export async function getAiConfig(): Promise<AiConfigResponse> {
+  const response = await fetchJsonAuth<{ data: AiConfigResponse }>("/ai/config");
+  return response?.data ?? null;
+}
+
+export async function saveAiConfig(config: {
+  provider: string;
+  apiKey: string;
+  model?: string;
+}): Promise<AiConfigResponse> {
+  const response = await putJsonAuth<{ data: AiConfigResponse }>("/ai/config", config);
+  return response.data;
+}
+
+export async function deleteAiConfig(): Promise<void> {
+  await deleteJsonAuth("/ai/config");
+}
+
+export async function validateAiKey(provider: string, apiKey: string): Promise<{ valid: boolean; model?: string }> {
+  const response = await postJsonAuth<{ data: { valid: boolean; model?: string } }>("/ai/validate-key", { provider, apiKey });
+  return response.data;
+}
+
+export async function runAiAnalysis(pair: string): Promise<AiAnalysisResponse> {
+  const response = await postJsonAuth<{ data: AiAnalysisResponse }>(`/ai/analyze/${encodeURIComponent(pair)}`, {});
+  return response.data;
+}
+
+export async function getAiTradeHistory(limit = 50, offset = 0): Promise<AiTradeHistoryResponse> {
+  const response = await fetchJsonAuth<{ data: AiTradeHistoryResponse }>(`/ai/history?limit=${limit}&offset=${offset}`);
+  return response?.data ?? { logs: [], total: 0, limit, offset };
+}
+
+export async function getAiAutoTradeSettings(): Promise<AiAutoTradeSettings> {
+  const response = await fetchJsonAuth<{ data: AiAutoTradeSettings }>("/ai/auto-trade");
+  return response?.data ?? { enabled: false, minConfidence: 0.7 };
+}
+
+export async function updateAiAutoTradeSettings(settings: Partial<AiAutoTradeSettings>): Promise<AiAutoTradeSettings> {
+  const response = await putJsonAuth<{ data: AiAutoTradeSettings }>("/ai/auto-trade", settings as Record<string, unknown>);
+  return response.data;
+}
+
+export async function runAiExecution(pair: string, amount?: string): Promise<AiExecutionResponse> {
+  const body: Record<string, unknown> = {};
+  if (amount) body.amount = amount;
+  const response = await postJsonAuth<{ data: AiExecutionResponse }>(`/ai/execute/${encodeURIComponent(pair)}`, body);
+  return response.data;
 }

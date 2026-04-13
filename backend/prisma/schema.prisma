@@ -14,10 +14,14 @@ model User {
   displayName    String
   role           String                @default("trader")
   walletAddress  String?
+  aiAutoTrade    Boolean               @default(false)
+  aiMinConfidence Float                @default(0.7)
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
   prompts        BotPersonalityPrompt[]
   sessions       UserSession[]
+  aiConfig       AiProviderConfig?
+  aiTradeLogs    AiTradeLog[]
 }
 
 model UserSession {
@@ -44,4 +48,44 @@ model BotPersonalityPrompt {
 
   @@unique([userId, botId])
   @@index([botId])
+}
+
+model AiProviderConfig {
+  id           String   @id @default(cuid())
+  userId       String
+  provider     String   @default("openrouter")
+  apiKey       String
+  model        String   @default("openai/gpt-4o-mini")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+}
+
+model AiTradeLog {
+  id              String   @id @default(cuid())
+  userId          String
+  pair            String
+  recommendation  String
+  confidence      Float
+  reasoning       String
+  marketRegime    String?
+  keyRisks        String?
+  entryLow        Float?
+  entryHigh       Float?
+  stopLoss        Float?
+  riskReward      Float?
+  executed        Boolean  @default(false)
+  txHash          String?
+  executionError  String?
+  provider        String
+  model           String
+  technicalData   String?
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([pair])
+  @@index([createdAt])
 }
