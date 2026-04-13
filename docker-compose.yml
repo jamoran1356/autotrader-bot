@@ -5,9 +5,9 @@ services:
       dockerfile: backend/Dockerfile
     container_name: autotrader-migrate
     env_file:
-      - .env
+      - backend/.env
     environment:
-      DATABASE_URL: postgresql://${DATABASE_USER:-autotrader}:${DATABASE_PASSWORD:-autotrader}@postgres:5432/${DATABASE_NAME:-autotrader_marketplace}?schema=public
+      DATABASE_URL: postgresql://autotrader:autotrader@postgres:5432/autotrader_marketplace?schema=public
       NODE_ENV: production
     command: sh -c "pnpm prisma migrate deploy || pnpm prisma db push"
     depends_on:
@@ -23,9 +23,9 @@ services:
       dockerfile: backend/Dockerfile
     container_name: autotrader-backend
     env_file:
-      - .env
+      - backend/.env
     environment:
-      DATABASE_URL: postgresql://${DATABASE_USER:-autotrader}:${DATABASE_PASSWORD:-autotrader}@postgres:5432/${DATABASE_NAME:-autotrader_marketplace}?schema=public
+      DATABASE_URL: postgresql://autotrader:autotrader@postgres:5432/autotrader_marketplace?schema=public
       NODE_ENV: production
       PORT: 3001
     depends_on:
