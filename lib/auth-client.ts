@@ -1,6 +1,6 @@
 const AUTH_TOKEN_KEY = "autotrader_auth_token";
 const AUTH_USER_KEY = "autotrader_auth_user";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE = "/api";
 
 export type AuthUser = {
   id: string;
@@ -60,7 +60,7 @@ export function clearAuthSession() {
 }
 
 async function postAuth(path: "/auth/login" | "/auth/register", body: Record<string, string>) {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -92,7 +92,7 @@ export async function fetchCurrentUser() {
     return null;
   }
 
-  const response = await fetch(`${API_URL}/users/me`, {
+  const response = await fetch(`${API_BASE}/users/me`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -117,7 +117,7 @@ export async function updateWalletAddress(walletAddress: string) {
     throw new Error("Missing auth token");
   }
 
-  const response = await fetch(`${API_URL}/users/wallet`, {
+  const response = await fetch(`${API_BASE}/users/wallet`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

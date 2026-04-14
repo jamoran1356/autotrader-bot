@@ -11,7 +11,7 @@ import type { TradingNetwork } from "@/lib/types";
 const baseNavItems = [
   { href: "/marketplace", label: "Marketplace" },
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/create-bot", label: "Create Bot" },
+  { href: "/dashboard", label: "Dashboard" },
 ];
 
 type EthereumProvider = {

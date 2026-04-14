@@ -15,11 +15,11 @@ import type {
   WalletStatus,
 } from "@/lib/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE = "/api";
 
 async function fetchJson<T>(path: string): Promise<T | null> {
   try {
-    const response = await fetch(`${API_URL}${path}`, { cache: "no-store" });
+    const response = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
     if (!response.ok) {
       return null;
     }
@@ -31,7 +31,7 @@ async function fetchJson<T>(path: string): Promise<T | null> {
 }
 
 async function postJson<T>(path: string, body: Record<string, unknown>): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -141,7 +141,7 @@ async function fetchJsonAuth<T>(path: string): Promise<T | null> {
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const response = await fetch(`${API_URL}${path}`, { cache: "no-store", headers });
+    const response = await fetch(`${API_BASE}${path}`, { cache: "no-store", headers });
     if (!response.ok) return null;
     return (await response.json()) as T;
   } catch {
@@ -154,7 +154,7 @@ async function postJsonAuth<T>(path: string, body: Record<string, unknown>): Pro
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     headers,
     body: JSON.stringify(body),
@@ -170,7 +170,7 @@ async function putJsonAuth<T>(path: string, body: Record<string, unknown>): Prom
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${API_BASE}${path}`, {
     method: "PUT",
     headers,
     body: JSON.stringify(body),
@@ -186,7 +186,7 @@ async function deleteJsonAuth(path: string): Promise<void> {
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const response = await fetch(`${API_URL}${path}`, { method: "DELETE", headers });
+  const response = await fetch(`${API_BASE}${path}`, { method: "DELETE", headers });
   if (!response.ok) {
     const payload = (await response.json().catch(() => ({}))) as { error?: string };
     throw new Error(payload.error || "Request failed");

@@ -1,7 +1,7 @@
 import { Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getLeaderboard } from "@/lib/api";
+import { getLeaderboard } from "@/lib/server/queries";
 
 export default async function LeaderboardPage() {
   const leaderboard = await getLeaderboard();

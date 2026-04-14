@@ -1,6 +1,6 @@
 import { MarketplaceExplorer } from "@/components/marketplace/marketplace-explorer";
 import { Card, CardContent } from "@/components/ui/card";
-import { getFeaturedBots } from "@/lib/api";
+import { getFeaturedBots } from "@/lib/server/queries";
 
 export default async function MarketplacePage() {
   const bots = await getFeaturedBots();

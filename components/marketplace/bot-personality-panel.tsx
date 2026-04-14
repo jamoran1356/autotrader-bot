@@ -14,7 +14,7 @@ const presets = [
 ];
 
 export function BotPersonalityPanel({ botId }: { botId: string }) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  const apiBase = "/api";
   const storageKey = `autotrader_prompt_${botId}`;
   const [prompt, setPrompt] = useState(() => {
     if (typeof window === "undefined") {
@@ -31,7 +31,7 @@ export function BotPersonalityPanel({ botId }: { botId: string }) {
       return;
     }
 
-    fetch(`${apiUrl}/users/prompts/${botId}`, {
+    fetch(`${apiBase}/users/prompts/${botId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -50,7 +50,7 @@ export function BotPersonalityPanel({ botId }: { botId: string }) {
         }
       })
       .catch(() => null);
-  }, [apiUrl, botId]);
+  }, [apiBase, botId]);
 
   const savePrompt = async () => {
     const cleanPrompt = prompt.trim();
@@ -58,7 +58,7 @@ export function BotPersonalityPanel({ botId }: { botId: string }) {
 
     const token = getAuthToken();
     if (token) {
-      await fetch(`${apiUrl}/users/prompts/${botId}`, {
+      await fetch(`${apiBase}/users/prompts/${botId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

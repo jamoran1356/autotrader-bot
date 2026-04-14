@@ -4,11 +4,12 @@ import { AiSettingsPanel } from "@/components/dashboard/ai-settings-panel";
 import { AiAnalysisPanel } from "@/components/dashboard/ai-analysis-panel";
 import { AiAutoTradePanel } from "@/components/dashboard/ai-auto-trade-panel";
 import { AiHistoryPanel } from "@/components/dashboard/ai-history-panel";
+import { CreateBotPanel } from "@/components/dashboard/create-bot-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getActiveTrades, getPlatformStats } from "@/lib/api";
+import { getActiveTrades, getStats } from "@/lib/server/queries";
 
 export default async function DashboardPage() {
-  const [stats, trades] = await Promise.all([getPlatformStats(), getActiveTrades()]);
+  const [stats, trades] = await Promise.all([getStats(), getActiveTrades()]);
 
   return (
     <div className="page-shell space-y-8">
@@ -65,6 +66,10 @@ export default async function DashboardPage() {
       <section className="grid gap-6 lg:grid-cols-2">
         <AiAutoTradePanel />
         <AiHistoryPanel />
+      </section>
+
+      <section>
+        <CreateBotPanel />
       </section>
 
       <section>
