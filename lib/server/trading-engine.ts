@@ -12,7 +12,7 @@ import { TradeExecutor } from "./trade-executor";
 import { StrategyAnalyst } from "./strategy-analyst";
 
 type Engine = {
-  scanner: MarketScanner | null;
+  scanner: MarketScanner;
   executor: TradeExecutor | null;
   analyst: StrategyAnalyst;
   opportunities: any[];
@@ -35,8 +35,15 @@ function loadContractAbi(): any[] | null {
 
 function createEngine(): Engine {
   const analyst = new StrategyAnalyst();
-  let scanner: MarketScanner | null = null;
   let executor: TradeExecutor | null = null;
+
+  // Scanner always available — it only needs Gate.io (no chain credentials)
+  const scanner = new MarketScanner({
+    gateUrl: "https://api.gateio.ws/api/v4",
+    apiKey: process.env.GATE_API_KEY,
+    apiSecret: process.env.GATE_API_SECRET,
+    scanInterval: parseInt(process.env.SCAN_INTERVAL || "3600000"),
+  });
 
   const hasTradingEnv =
     Boolean(process.env.BOT_PRIVATE_KEY) &&
@@ -44,13 +51,6 @@ function createEngine(): Engine {
     Boolean(process.env.HASHKEY_RPC_URL);
 
   if (hasTradingEnv) {
-    scanner = new MarketScanner({
-      gateUrl: "https://api.gateio.ws/api/v4",
-      apiKey: process.env.GATE_API_KEY,
-      apiSecret: process.env.GATE_API_SECRET,
-      scanInterval: parseInt(process.env.SCAN_INTERVAL || "3600000"),
-    });
-
     const provider = new ethers.JsonRpcProvider(process.env.HASHKEY_RPC_URL);
     const signer = new ethers.Wallet(process.env.BOT_PRIVATE_KEY!, provider);
     const contractABI = loadContractAbi();

@@ -47,9 +47,7 @@ export function SiteHeader() {
     };
   }, []);
 
-  const navItems = isLoggedIn
-    ? [...baseNavItems.slice(0, 1), { href: "/dashboard", label: "Dashboard" }, ...baseNavItems.slice(1)]
-    : baseNavItems;
+  const navItems = baseNavItems;
 
   const toggleLogin = () => {
     if (isLoggedIn) {
@@ -156,10 +154,10 @@ export function SiteHeader() {
           {/* CTA — only when authenticated */}
           {isLoggedIn ? (
             <ButtonLink
-              href="/marketplace"
+              href="/dashboard"
               className="shrink-0 whitespace-nowrap px-4 py-2 border border-[#081947] bg-[#0f2f8a] text-[#ffffff] text-sm hover:bg-[#0a2265]"
             >
-              Configure bot
+              Open dashboard
             </ButtonLink>
           ) : null}
         </div>

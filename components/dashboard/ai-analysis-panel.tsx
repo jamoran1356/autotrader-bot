@@ -55,6 +55,7 @@ export function AiAnalysisPanel() {
       try {
         const data = await runAiAnalysis(pair.trim().toUpperCase());
         setResult(data);
+        window.dispatchEvent(new Event("autotrader-analysis-complete"));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Analysis failed.");
       }

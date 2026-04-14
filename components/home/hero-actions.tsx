@@ -25,15 +25,27 @@ export function HeroActions() {
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row">
-      <ButtonLink href="/marketplace" size="lg">
-        Explore bots
-        <ArrowRight className="h-4 w-4" />
-      </ButtonLink>
       {isLoggedIn ? (
-        <ButtonLink href="/dashboard" variant="secondary" size="lg">
-          View portfolio
-        </ButtonLink>
-      ) : null}
+        <>
+          <ButtonLink href="/dashboard" size="lg">
+            Open dashboard
+            <ArrowRight className="h-4 w-4" />
+          </ButtonLink>
+          <ButtonLink href="/marketplace" variant="secondary" size="lg">
+            Explore marketplace
+          </ButtonLink>
+        </>
+      ) : (
+        <>
+          <ButtonLink href="/auth" size="lg">
+            Get started
+            <ArrowRight className="h-4 w-4" />
+          </ButtonLink>
+          <ButtonLink href="/marketplace" variant="secondary" size="lg">
+            Explore bots
+          </ButtonLink>
+        </>
+      )}
     </div>
   );
 }

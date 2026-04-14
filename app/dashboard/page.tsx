@@ -4,7 +4,8 @@ import { AiSettingsPanel } from "@/components/dashboard/ai-settings-panel";
 import { AiAnalysisPanel } from "@/components/dashboard/ai-analysis-panel";
 import { AiAutoTradePanel } from "@/components/dashboard/ai-auto-trade-panel";
 import { AiHistoryPanel } from "@/components/dashboard/ai-history-panel";
-import { CreateBotPanel } from "@/components/dashboard/create-bot-panel";
+import { OnboardingStepper } from "@/components/dashboard/onboarding-stepper";
+import { LiveScanPanel } from "@/components/dashboard/live-scan-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getActiveTrades, getStats } from "@/lib/server/queries";
 
@@ -28,7 +29,17 @@ export default async function DashboardPage() {
         <StatCard label="Active trades" value={stats.activeTrades} />
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+      {/* Onboarding guide — disappears once all steps are complete */}
+      <section>
+        <OnboardingStepper />
+      </section>
+
+      {/* Live scanner — works without AI key, immediate demo value */}
+      <section>
+        <LiveScanPanel />
+      </section>
+
+      <section id="ai-settings" className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-semibold">Active trades</CardTitle>
@@ -59,17 +70,13 @@ export default async function DashboardPage() {
         <AiSettingsPanel />
       </section>
 
-      <section>
+      <section id="ai-analysis">
         <AiAnalysisPanel />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
         <AiAutoTradePanel />
         <AiHistoryPanel />
-      </section>
-
-      <section>
-        <CreateBotPanel />
       </section>
 
       <section>
