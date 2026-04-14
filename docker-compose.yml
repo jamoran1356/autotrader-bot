@@ -27,9 +27,18 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=proxy
+      # HTTPS
       - traefik.http.routers.autotrader.rule=Host(`autotrader.pydti.com`)
       - traefik.http.routers.autotrader.entrypoints=websecure
       - traefik.http.routers.autotrader.tls=true
+      - traefik.http.routers.autotrader.tls.certresolver=le
+      # HTTP → HTTPS redirect
+      - traefik.http.routers.autotrader-http.rule=Host(`autotrader.pydti.com`)
+      - traefik.http.routers.autotrader-http.entrypoints=web
+      - traefik.http.routers.autotrader-http.middlewares=autotrader-https-redirect
+      - traefik.http.middlewares.autotrader-https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.autotrader-https-redirect.redirectscheme.permanent=true
+      # Service
       - traefik.http.services.autotrader.loadbalancer.server.port=3000
 
   postgres:
