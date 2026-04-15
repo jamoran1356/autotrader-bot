@@ -32,9 +32,11 @@ export function OnboardingStepper() {
     };
     syncAuth();
     window.addEventListener("autotrader-auth-change", syncAuth);
+    window.addEventListener("autotrader-ai-config-change", syncAuth);
     window.addEventListener("focus", syncAuth);
     return () => {
       window.removeEventListener("autotrader-auth-change", syncAuth);
+      window.removeEventListener("autotrader-ai-config-change", syncAuth);
       window.removeEventListener("focus", syncAuth);
     };
   }, []);

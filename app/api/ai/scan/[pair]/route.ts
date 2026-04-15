@@ -63,6 +63,7 @@ export async function GET(
           orderBookExtreme: analysis.confirmations.orderBookExtreme,
           total: `${analysis.confirmations.total}/4`,
         },
+        sentiment: analysis.sentiment ?? null,
         timestamp: analysis.timestamp,
       },
     });

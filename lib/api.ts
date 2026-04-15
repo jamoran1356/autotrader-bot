@@ -247,3 +247,31 @@ export async function runAiExecution(pair: string, amount?: string): Promise<AiE
   const response = await postJsonAuth<{ data: AiExecutionResponse }>(`/ai/execute/${encodeURIComponent(pair)}`, body);
   return response.data;
 }
+
+/* ── Bot CRUD ──────────────────────────────────────── */
+
+export interface UserBot {
+  id: string;
+  botId: string;
+  prompt: string;
+  tone: string;
+  riskMode: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function getUserBots(): Promise<UserBot[]> {
+  const response = await fetchJsonAuth<{ data: UserBot[] }>("/users/bots");
+  return response?.data ?? [];
+}
+
+export async function createUserBot(data: {
+  name: string;
+  pair: string;
+  prompt: string;
+  tone?: string;
+  riskMode?: string;
+}): Promise<UserBot> {
+  const response = await postJsonAuth<{ data: UserBot }>("/users/bots", data as Record<string, unknown>);
+  return response.data;
+}

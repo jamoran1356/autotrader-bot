@@ -11,7 +11,6 @@ import type { TradingNetwork } from "@/lib/types";
 const baseNavItems = [
   { href: "/marketplace", label: "Marketplace" },
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/dashboard", label: "Dashboard" },
 ];
 
 type EthereumProvider = {
@@ -133,33 +132,32 @@ export function SiteHeader() {
 
           {/* Auth */}
           {isLoggedIn ? (
-            <button
-              onClick={toggleLogin}
-              className="whitespace-nowrap rounded-full border border-[var(--border)] bg-white/80 px-3 py-1.5 text-xs font-medium text-[var(--muted)] hover:bg-white"
-            >
-              {displayName ? displayName : "Log out"}
-            </button>
+            <>
+              {displayName && (
+                <span className="whitespace-nowrap rounded-full border border-[var(--border)] bg-white/80 px-3 py-1.5 text-xs font-medium text-[var(--foreground)]">
+                  {displayName}
+                </span>
+              )}
+              <button
+                onClick={toggleLogin}
+                className="whitespace-nowrap rounded-full border border-[var(--border)] bg-white/80 px-3 py-1.5 text-xs font-medium text-[#b42318] hover:bg-red-50"
+              >
+                Log out
+              </button>
+            </>
           ) : (
             <ButtonLink href="/auth" variant="secondary" className="px-3 py-1.5 whitespace-nowrap text-xs">
               Sign in
             </ButtonLink>
           )}
 
-          {/* 4/4 badge */}
-          <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-[rgba(15,159,111,0.1)] px-3 py-1.5 text-xs font-semibold text-[var(--success)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--success)]" />
-            4/4 live
-          </span>
-
-          {/* CTA — only when authenticated */}
-          {isLoggedIn ? (
-            <ButtonLink
-              href="/dashboard"
-              className="shrink-0 whitespace-nowrap px-4 py-2 border border-[#081947] bg-[#0f2f8a] text-[#ffffff] text-sm hover:bg-[#0a2265]"
-            >
-              Open dashboard
-            </ButtonLink>
-          ) : null}
+          {/* CTA */}
+          <ButtonLink
+            href={isLoggedIn ? "/dashboard" : "/auth"}
+            className="shrink-0 whitespace-nowrap px-4 py-2 border border-[#081947] bg-[#0f2f8a] text-[#ffffff] text-sm hover:bg-[#0a2265]"
+          >
+            {isLoggedIn ? "Dashboard" : "Get started"}
+          </ButtonLink>
         </div>
 
         {/* Mobile toggle */}

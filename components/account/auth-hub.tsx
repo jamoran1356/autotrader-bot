@@ -1,19 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppState } from "@/lib/app-state";
 import {
   fetchCurrentUser,
-  getAuthUser,
   isLoggedIn,
   loginWithPassword,
+  loginWithWallet,
   registerWithPassword,
-  updateWalletAddress,
 } from "@/lib/auth-client";
-import type { TradingNetwork } from "@/lib/types";
 
 type SolanaProvider = {
   isPhantom?: boolean;
@@ -22,20 +21,13 @@ type SolanaProvider = {
 
 type FormMode = "login" | "register";
 
-const networkOptions: Array<{ label: string; value: TradingNetwork }> = [
-  { label: "All networks", value: "all" },
-  { label: "HashKey testnet", value: "hashkey-testnet" },
-  { label: "Stellar testnet", value: "stellar-testnet" },
-  { label: "Solana devnet", value: "solana-devnet" },
-];
-
 export function AuthHub() {
-  const { selectedNetwork, setSelectedNetwork, walletLinks, linkWallet } = useAppState();
+  const router = useRouter();
+  const { walletLinks, linkWallet } = useAppState();
   const [mode, setMode] = useState<FormMode>("login");
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("demo@autotrader.bot");
   const [password, setPassword] = useState("demo12345");
-  const [stellarAddress, setStellarAddress] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -64,8 +56,6 @@ export function AuthHub() {
     };
   }, []);
 
-  const currentUser = getAuthUser();
-
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -75,12 +65,11 @@ export function AuthHub() {
     try {
       if (mode === "login") {
         await loginWithPassword(email.trim(), password);
-        setMessage("Login successful.");
       } else {
         await registerWithPassword(displayName.trim(), email.trim(), password);
-        setMessage("Account created and session started.");
       }
       setLoggedIn(true);
+      router.push("/dashboard");
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Authentication request failed.");
     } finally {
@@ -88,174 +77,165 @@ export function AuthHub() {
     }
   };
 
-  const pushWallet = async (chain: "evm" | "solana" | "stellar", address: string) => {
-    linkWallet(chain, address);
-
-    if (!isLoggedIn()) {
-      setMessage(`${chain.toUpperCase()} wallet saved locally. Log in to sync with backend.`);
-      return;
-    }
-
-    await updateWalletAddress(`${chain}:${address}`);
-    setMessage(`${chain.toUpperCase()} wallet linked and synced.`);
-  };
-
-  const connectEvm = async () => {
+  const connectEvmAndAuth = async () => {
     const provider = (window as Window & { ethereum?: { request: (args: { method: string }) => Promise<string[]> } }).ethereum;
     if (!provider) {
       setError("No EVM wallet found. Install MetaMask.");
       return;
     }
-
     setError(null);
-
+    setBusy(true);
     try {
       const accounts = await provider.request({ method: "eth_requestAccounts" });
       const account = accounts?.[0];
-      if (!account) {
-        setError("No EVM account returned.");
-        return;
-      }
-
-      await pushWallet("evm", account);
-    } catch {
-      setError("EVM wallet connection failed.");
+      if (!account) { setError("No account returned."); return; }
+      linkWallet("evm", account);
+      await loginWithWallet(account, "evm");
+      setLoggedIn(true);
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Wallet login failed.");
+    } finally {
+      setBusy(false);
     }
   };
 
-  const connectSolana = async () => {
+  const connectSolanaAndAuth = async () => {
     const provider = (window as Window & { solana?: SolanaProvider }).solana;
     if (!provider?.isPhantom) {
       setError("No Phantom wallet found.");
       return;
     }
-
     setError(null);
-
+    setBusy(true);
     try {
       const result = await provider.connect();
       const address = result.publicKey.toString();
-      await pushWallet("solana", address);
-    } catch {
-      setError("Solana wallet connection failed.");
-    }
-  };
-
-  const connectStellar = async () => {
-    const address = stellarAddress.trim();
-    if (!address) {
-      setError("Enter a Stellar public address first.");
-      return;
-    }
-
-    setError(null);
-    try {
-      await pushWallet("stellar", address);
-      setStellarAddress("");
-    } catch {
-      setError("Stellar wallet sync failed.");
+      linkWallet("solana", address);
+      await loginWithWallet(address, "solana");
+      setLoggedIn(true);
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Solana wallet login failed.");
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      {/* Wallet auth — primary method */}
       <Card>
         <CardHeader>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setMode("login")}
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                mode === "login" ? "bg-[var(--primary)] text-white" : "border border-[var(--border)] bg-white text-[var(--muted)]"
-              }`}
-            >
-              Login
-            </button>
-            <button
-              onClick={() => setMode("register")}
-              className={`rounded-full px-4 py-2 text-sm font-semibold ${
-                mode === "register" ? "bg-[var(--primary)] text-white" : "border border-[var(--border)] bg-white text-[var(--muted)]"
-              }`}
-            >
-              Create account
-            </button>
-          </div>
-          <CardTitle className="mt-4 text-2xl font-semibold">
-            {mode === "login" ? "Access your bot workspace" : "Create your trader profile"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            {mode === "register" ? (
-              <Field label="Display name" value={displayName} onChange={setDisplayName} placeholder="Alice Quant" />
-            ) : null}
-            <Field label="Email" value={email} onChange={setEmail} placeholder="you@domain.com" type="email" />
-            <Field label="Password" value={password} onChange={setPassword} placeholder="At least 8 characters" type="password" />
-            <Button type="submit" className="w-full justify-center" disabled={busy}>
-              {busy ? "Processing..." : mode === "login" ? "Log in" : "Create account"}
-            </Button>
-          </form>
-          {error ? <p className="mt-4 text-sm text-[#b42318]">{error}</p> : null}
-          {message ? <p className="mt-4 text-sm text-[var(--success)]">{message}</p> : null}
-          <p className="mt-4 text-sm text-[var(--muted)]">
-            Active user: {loggedIn ? currentUser?.displayName || currentUser?.email : "Not authenticated"}
+          <CardTitle className="text-2xl font-semibold">Connect wallet to start</CardTitle>
+          <p className="mt-1 text-sm text-[var(--muted)]">
+            Instantly sign in with your wallet — no email or password needed. Your wallet becomes your identity.
           </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold">Network and wallet linking</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <label className="block space-y-2 text-sm">
-            <span className="font-semibold text-[var(--foreground)]">Execution network</span>
-            <select
-              value={selectedNetwork}
-              onChange={(event) => setSelectedNetwork(event.target.value as TradingNetwork)}
-              className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3"
-            >
-              {networkOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-
           <button
-            onClick={connectEvm}
-            className="flex w-full items-center justify-between rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-left"
+            onClick={connectEvmAndAuth}
+            disabled={busy}
+            className="flex w-full items-center gap-4 rounded-2xl border-2 border-[var(--primary)]/30 bg-gradient-to-r from-[var(--primary-soft)] to-white px-5 py-4 text-left transition-all hover:border-[var(--primary)] hover:shadow-sm disabled:opacity-50"
           >
-            <span className="text-sm font-semibold">Connect EVM wallet</span>
-            <span className="text-xs text-[var(--muted)]">{short(walletLinks.evm) || "Not linked"}</span>
-          </button>
-
-          <button
-            onClick={connectSolana}
-            className="flex w-full items-center justify-between rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-left"
-          >
-            <span className="text-sm font-semibold">Connect Solana wallet</span>
-            <span className="text-xs text-[var(--muted)]">{short(walletLinks.solana) || "Not linked"}</span>
-          </button>
-
-          <div className="rounded-2xl border border-[var(--border)] bg-white p-4">
-            <p className="mb-2 text-sm font-semibold">Link Stellar public key</p>
-            <div className="flex gap-2">
-              <input
-                value={stellarAddress}
-                onChange={(event) => setStellarAddress(event.target.value)}
-                placeholder="G..."
-                className="w-full rounded-xl border border-[var(--border)] px-3 py-2 text-sm"
-              />
-              <Button variant="secondary" onClick={connectStellar}>
-                <Wallet className="h-4 w-4" />
-                Link
-              </Button>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)] text-white">
+              <Wallet className="h-5 w-5" />
             </div>
-            <p className="mt-2 text-xs text-[var(--muted)]">Current: {short(walletLinks.stellar) || "Not linked"}</p>
+            <div>
+              <p className="text-sm font-semibold text-[var(--foreground)]">MetaMask / EVM Wallet</p>
+              <p className="text-xs text-[var(--muted)]">HashKey Chain, Ethereum — recommended</p>
+            </div>
+          </button>
+
+          <button
+            onClick={connectSolanaAndAuth}
+            disabled={busy}
+            className="flex w-full items-center gap-4 rounded-2xl border border-[var(--border)] bg-white px-5 py-4 text-left transition-all hover:border-[var(--primary)] hover:shadow-sm disabled:opacity-50"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#9945FF] text-white">
+              <Wallet className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[var(--foreground)]">Phantom / Solana</p>
+              <p className="text-xs text-[var(--muted)]">Solana devnet</p>
+            </div>
+          </button>
+
+          {walletLinks.evm && (
+            <p className="text-xs text-[var(--success)]">EVM connected: {short(walletLinks.evm)}</p>
+          )}
+          {walletLinks.solana && (
+            <p className="text-xs text-[var(--success)]">Solana connected: {short(walletLinks.solana)}</p>
+          )}
+
+          {error ? <p className="text-sm text-[#b42318]">{error}</p> : null}
+          {message ? <p className="text-sm text-[var(--success)]">{message}</p> : null}
+
+          <div className="relative py-3">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[var(--border)]" /></div>
+            <div className="relative flex justify-center"><span className="bg-white px-3 text-xs text-[var(--muted)]">or use email</span></div>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4">
+            <div className="mb-3 flex gap-2">
+              <button
+                onClick={() => setMode("login")}
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  mode === "login" ? "bg-[var(--foreground)] text-white" : "border border-[var(--border)] bg-white text-[var(--muted)]"
+                }`}
+              >
+                Login
+              </button>
+              <button
+                onClick={() => setMode("register")}
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  mode === "register" ? "bg-[var(--foreground)] text-white" : "border border-[var(--border)] bg-white text-[var(--muted)]"
+                }`}
+              >
+                Register
+              </button>
+            </div>
+            <form className="space-y-3" onSubmit={handleSubmit}>
+              {mode === "register" ? (
+                <Field label="Display name" value={displayName} onChange={setDisplayName} placeholder="Alice Quant" />
+              ) : null}
+              <Field label="Email" value={email} onChange={setEmail} placeholder="you@domain.com" type="email" />
+              <Field label="Password" value={password} onChange={setPassword} placeholder="At least 8 characters" type="password" />
+              <Button type="submit" className="w-full justify-center" disabled={busy}>
+                {busy ? "Processing..." : mode === "login" ? "Log in" : "Create account"}
+              </Button>
+            </form>
           </div>
         </CardContent>
       </Card>
+
+      {/* Info panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-semibold">How AutoTrader works</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <InfoStep number="1" title="Connect wallet or create account" description="Your wallet is your identity. One click sign-in with MetaMask or Phantom." />
+          <InfoStep number="2" title="Configure AI provider" description="Add your OpenRouter, OpenAI, or Anthropic API key. The AI analyzes live market data before every trade." />
+          <InfoStep number="3" title="Scan & analyze markets" description="Live technical analysis (RSI, MACD, ATR, volume) from Gate.io plus social sentiment from CryptoPanic." />
+          <InfoStep number="4" title="AI-gated execution" description="The AI decides LONG, SHORT, or NO_TRADE with a confidence score. Only high-confidence signals execute on HashKey Chain." />
+          <InfoStep number="5" title="Full audit trail" description="Every AI decision — reasoning, confidence, execution outcome — is permanently logged for transparency." />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function InfoStep({ number, title, description }: { number: string; title: string; description: string }) {
+  return (
+    <div className="flex gap-3">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--primary)] text-xs font-bold text-white">
+        {number}
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-[var(--foreground)]">{title}</p>
+        <p className="mt-0.5 text-xs text-[var(--muted)]">{description}</p>
+      </div>
     </div>
   );
 }

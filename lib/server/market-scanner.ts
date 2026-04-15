@@ -156,6 +156,83 @@ export class MarketScanner extends EventEmitter {
     }
   }
 
+  async fetchSocialSentiment(pair: string) {
+    // Extract base currency (e.g., "BTC" from "BTC_USDT")
+    const baseCurrency = pair.split("_")[0]?.toLowerCase() || "btc";
+
+    const results: {
+      fearGreedIndex: { value: number; label: string } | null;
+      news: Array<{ title: string; source: string; sentiment: string; url: string; publishedAt: string }>;
+      overallSentiment: "bullish" | "bearish" | "neutral";
+      sentimentScore: number;
+    } = {
+      fearGreedIndex: null,
+      news: [],
+      overallSentiment: "neutral",
+      sentimentScore: 50,
+    };
+
+    // 1) Fear & Greed Index (free, no key)
+    try {
+      const fgResponse = await axios.get("https://api.alternative.me/fng/?limit=1", { timeout: 5000 });
+      const fgData = fgResponse.data?.data?.[0];
+      if (fgData) {
+        results.fearGreedIndex = {
+          value: parseInt(fgData.value, 10),
+          label: fgData.value_classification,
+        };
+      }
+    } catch {
+      // Non-critical — continue without FGI
+    }
+
+    // 2) CryptoPanic news (free public feed, no auth token needed for basic access)
+    try {
+      const newsResponse = await axios.get(
+        `https://cryptopanic.com/api/free/v1/posts/?currencies=${baseCurrency}&kind=news&public=true`,
+        { timeout: 5000 }
+      );
+      const posts = newsResponse.data?.results?.slice(0, 5) || [];
+      results.news = posts.map((p: any) => ({
+        title: p.title || "",
+        source: p.source?.title || "Unknown",
+        sentiment: p.votes
+          ? p.votes.positive > p.votes.negative
+            ? "positive"
+            : p.votes.negative > p.votes.positive
+              ? "negative"
+              : "neutral"
+          : "neutral",
+        url: p.url || "",
+        publishedAt: p.published_at || "",
+      }));
+    } catch {
+      // Non-critical — continue without news
+    }
+
+    // Calculate aggregate sentiment score
+    let score = 50; // neutral baseline
+
+    // FGI contribution (0-100 maps directly)
+    if (results.fearGreedIndex) {
+      score = score * 0.5 + results.fearGreedIndex.value * 0.5;
+    }
+
+    // News sentiment contribution
+    if (results.news.length > 0) {
+      const positiveCount = results.news.filter((n) => n.sentiment === "positive").length;
+      const negativeCount = results.news.filter((n) => n.sentiment === "negative").length;
+      const newsScore = ((positiveCount - negativeCount) / results.news.length) * 25;
+      score += newsScore;
+    }
+
+    score = Math.max(0, Math.min(100, Math.round(score)));
+    results.sentimentScore = score;
+    results.overallSentiment = score >= 60 ? "bullish" : score <= 40 ? "bearish" : "neutral";
+
+    return results;
+  }
+
   async analyzePair(pair: string) {
     const klines = await this.fetchKlines(pair);
     if (!klines || klines.length < 26) return null;
@@ -169,8 +246,12 @@ export class MarketScanner extends EventEmitter {
     const macd = this.calculateMACD(closes);
     const atr = this.calculateATR(highs, lows, closes);
 
-    const ticker = await this.fetchTicker(pair);
-    const orderBook = await this.fetchOrderBook(pair);
+    // Fetch social sentiment in parallel with order book
+    const [ticker, orderBook, sentiment] = await Promise.all([
+      this.fetchTicker(pair),
+      this.fetchOrderBook(pair),
+      this.fetchSocialSentiment(pair),
+    ]);
 
     if (!ticker || !orderBook || !macd) return null;
 
@@ -200,6 +281,7 @@ export class MarketScanner extends EventEmitter {
       atr,
       orderBook,
       confirmations,
+      sentiment,
       volume24h: parseFloat(ticker.quote_volume),
       change24h: parseFloat(ticker.change_percentage),
       high24h: parseFloat(ticker.high_24h),

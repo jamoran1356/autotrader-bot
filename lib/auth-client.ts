@@ -86,6 +86,23 @@ export async function registerWithPassword(displayName: string, email: string, p
   return payload.data.user;
 }
 
+export async function loginWithWallet(walletAddress: string, chain: string = "evm") {
+  const response = await fetch(`${API_BASE}/auth/wallet`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ walletAddress, chain }),
+  });
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new Error(payload.error || "Wallet authentication failed");
+  }
+
+  const payload = (await response.json()) as AuthPayload;
+  setAuthSession(payload.data.token, payload.data.user);
+  return payload.data.user;
+}
+
 export async function fetchCurrentUser() {
   const token = getAuthToken();
   if (!token) {

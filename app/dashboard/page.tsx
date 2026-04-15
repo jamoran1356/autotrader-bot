@@ -6,6 +6,7 @@ import { AiAutoTradePanel } from "@/components/dashboard/ai-auto-trade-panel";
 import { AiHistoryPanel } from "@/components/dashboard/ai-history-panel";
 import { OnboardingStepper } from "@/components/dashboard/onboarding-stepper";
 import { LiveScanPanel } from "@/components/dashboard/live-scan-panel";
+import { CreateBotPanel } from "@/components/dashboard/create-bot-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getActiveTrades, getStats } from "@/lib/server/queries";
 
@@ -77,6 +78,11 @@ export default async function DashboardPage() {
       <section className="grid gap-6 lg:grid-cols-2">
         <AiAutoTradePanel />
         <AiHistoryPanel />
+      </section>
+
+      {/* Bot creation — autonomous agents */}
+      <section>
+        <CreateBotPanel />
       </section>
 
       <section>

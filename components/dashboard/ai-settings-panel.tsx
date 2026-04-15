@@ -83,6 +83,7 @@ export function AiSettingsPanel() {
         setConfig(saved);
         setApiKey("");
         setFeedback("AI provider configured successfully. You can now run AI-powered analysis.");
+        window.dispatchEvent(new Event("autotrader-ai-config-change"));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to save configuration.");
       }
